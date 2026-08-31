@@ -7,22 +7,14 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Methods': 'POST, OPTIONS'
   };
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
-  }
+  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
 
   try {
-    const { pan, companyId } = JSON.parse(event.body || '{}');
+    const { pan, companyId, captchaToken, captchaAnswer } = JSON.parse(event.body || '{}');
+
     if (!pan || !companyId) {
-      return { 
-        statusCode: 400, 
-        headers, 
-        body: JSON.stringify({ error: 'PAN and companyId are required' }) 
-      };
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'PAN and companyId are required' }) };
     }
 
     const payload = {
@@ -34,7 +26,10 @@ exports.handler = async (event) => {
       txtDPID: '',
       txtClId: '',
       ddlType: '0',
-      lang: 'en'
+      lang: 'en',
+      CaptchaToken: captchaToken || '',
+      CaptchaAnswer: captchaAnswer || '',
+      ResultToken: ''
     };
 
     const reqHeaders = {
@@ -70,30 +65,22 @@ exports.handler = async (event) => {
             break;
           }
         }
-      } catch (e) {
-        // Try next endpoint on error
-      }
+      } catch (e) {}
     }
 
     if (!rawData) {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ error: 'No data returned from Bigshare servers' })
+        body: JSON.stringify({ error: 'No response from Bigshare servers' })
       };
     }
 
-    // Parse JSON string inside .d if stringified
     let parsed = rawData;
     if (typeof rawData === 'string') {
-      try {
-        parsed = JSON.parse(rawData);
-      } catch (e) {
-        parsed = null;
-      }
+      try { parsed = JSON.parse(rawData); } catch (e) { parsed = null; }
     }
 
-    // Extract table records across all known Bigshare formats
     let records = [];
     if (Array.isArray(parsed)) {
       records = parsed;

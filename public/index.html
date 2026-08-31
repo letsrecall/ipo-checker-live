@@ -16,55 +16,349 @@
             --success: #16a34a;
             --danger: #dc2626;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 24px; max-width: 1000px; margin: 0 auto; }
-        .container { background: var(--card); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); padding: 28px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-        .title h1 { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
-        .title p { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
-        .queue-status-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 18px; border-radius: 10px; display: flex; align-items: center; gap: 12px; }
-        .queue-badge { background: var(--primary); color: white; font-weight: 700; font-size: 16px; padding: 4px 12px; border-radius: 20px; }
-        .ipo-selector-box { margin-bottom: 20px; background: #f1f5f9; padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
-        .ipo-selector-box label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text); }
-        .select-row { display: flex; gap: 10px; }
-        .select-box { flex: 1; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 15px; outline: none; background: white; color: var(--text); font-weight: 500; }
-        .controls-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-        .btn { padding: 12px 20px; font-size: 15px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: #e2e8f0; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .family-rows-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-        .family-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 12px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); }
-        .input-box { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; outline: none; text-transform: uppercase; }
-        .remove-btn { border: none; background: none; color: var(--danger); font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 50%; width: 32px; height: 32px; }
-        .remove-btn:hover { background: #fee2e2; }
-        .grid-viewer-pic { border-radius: 50%; object-fit: cover; border: 1.5px solid #cbd5e1; width: 36px; height: 36px; }
-        .results-box { margin-top: 32px; display: none; }
-        .results-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 12px; }
-        .results-table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
-        .results-table td { padding: 14px 16px; background: #f8fafc; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .results-table tr td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-        .results-table tr td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
-        .status-badge { font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; }
-        .status-allotted { background: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
-        .status-failed { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
-        .status-error { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; }
-        .modal-card { background: #ffffff; border-radius: 14px; width: 90%; max-width: 650px; padding: 24px; border: 1px solid var(--border); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-        .modal-form { display: grid; grid-template-columns: 2fr 1.5fr 1.2fr auto; gap: 8px; align-items: center; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; }
-        .badge-reg { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; background: #e2e8f0; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            padding: 28px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .title h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+        }
+
+        .title p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .queue-status-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 10px 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .queue-badge {
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .ipo-selector-box {
+            margin-bottom: 20px;
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+            .ipo-selector-box label {
+                display: block;
+                font-weight: 600;
+                font-size: 14px;
+                margin-bottom: 8px;
+                color: var(--text);
+            }
+
+        .select-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .select-box {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 15px;
+            outline: none;
+            background: white;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* Bigshare Captcha Box */
+        .captcha-box {
+            display: none;
+            margin-top: 12px;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .captcha-img {
+            height: 38px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #eee;
+            min-width: 100px;
+        }
+
+        .controls-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background: var(--primary-hover);
+            }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+            .btn-secondary:hover {
+                background: #e2e8f0;
+            }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .family-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .family-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 40px;
+            gap: 12px;
+            align-items: center;
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .input-box {
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        .remove-btn {
+            border: none;
+            background: none;
+            color: var(--danger);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+        }
+
+            .remove-btn:hover {
+                background: #fee2e2;
+            }
+
+        .grid-viewer-pic {
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1.5px solid #cbd5e1;
+            width: 36px;
+            height: 36px;
+        }
+
+        .results-box {
+            margin-top: 32px;
+            display: none;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin-top: 12px;
+        }
+
+            .results-table th {
+                padding: 12px 16px;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text-muted);
+                font-size: 13px;
+                text-transform: uppercase;
+            }
+
+            .results-table td {
+                padding: 14px 16px;
+                background: #f8fafc;
+                border-top: 1px solid var(--border);
+                border-bottom: 1px solid var(--border);
+            }
+
+            .results-table tr td:first-child {
+                border-left: 1px solid var(--border);
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
+            }
+
+            .results-table tr td:last-child {
+                border-right: 1px solid var(--border);
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
+            }
+
+        .status-badge {
+            font-weight: 700;
+            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-allotted {
+            background: #dcfce7;
+            color: var(--success);
+            border: 1px solid #bbf7d0;
+        }
+
+        .status-failed {
+            background: #fee2e2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .status-error {
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 14px;
+            width: 90%;
+            max-width: 650px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-form {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1.2fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .badge-reg {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            background: #e2e8f0;
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
         <div class="header">
             <div class="title">
                 <h1>Any Tech Help - IPO Allotment Checker</h1>
                 <p>Capturing YouTube live chat PANs automatically via Python relay (Port 8080)</p>
             </div>
+
             <div class="queue-status-box">
                 <span id="queueCount" class="queue-badge">0</span>
                 <span style="font-weight: 600; font-size: 14px; color: #1e40af;">PANs Waiting</span>
@@ -74,10 +368,18 @@
         <div class="ipo-selector-box">
             <label for="ipoSelect">Select Active IPO:</label>
             <div class="select-row">
-                <select id="ipoSelect" class="select-box">
+                <select id="ipoSelect" class="select-box" onchange="handleIpoChange()">
                     <option value="" data-registrar="">⏳ Loading IPOs...</option>
                 </select>
                 <button onclick="openManageModal()" class="btn btn-secondary" style="white-space: nowrap;">⚙️ Manage IPOs</button>
+            </div>
+
+            <!-- Bigshare Captcha Row -->
+            <div id="bigshareCaptchaContainer" class="captcha-box">
+                <img id="bigshareCaptchaImg" src="" alt="Captcha" class="captcha-img">
+                <button onclick="loadBigshareCaptcha()" class="btn btn-secondary" style="padding: 6px 10px; font-size: 13px;" title="Refresh Captcha">🔄</button>
+                <input type="text" id="bigshareCaptchaInput" placeholder="Enter 6-digit Captcha" maxlength="6" class="input-box" style="width: 200px; text-transform: none;">
+                <span style="font-size: 12px; color: var(--text-muted);">(Required by Bigshare once per batch)</span>
             </div>
         </div>
 
@@ -120,7 +422,7 @@
             <input type="hidden" id="adminOriginalId" value="">
             <div class="modal-form">
                 <input type="text" id="adminIpoName" placeholder="IPO Company Name" class="input-box" style="text-transform:none;">
-                <input type="text" id="adminIpoId" placeholder="Client ID / Code" class="input-box" style="text-transform:none;">
+                <input type="text" id="adminIpoId" placeholder="Client ID / Code (e.g. 9046)" class="input-box" style="text-transform:none;">
                 <select id="adminIpoReg" class="select-box" style="padding: 8px;">
                     <option value="kfin">KFintech</option>
                     <option value="bigshare">Bigshare</option>
@@ -147,9 +449,9 @@
         </div>
     </div>
 
-    <script>
-        const DEFAULT_AVATAR = 'https://www.gstatic.com/youtube/img/creator/avatar/default_v2.png';
+    <script>const DEFAULT_AVATAR = 'https://www.gstatic.com/youtube/img/creator/avatar/default_v2.png';
         const STORAGE_KEY = 'ath_ipo_list';
+        let currentBigshareCaptchaToken = '';
 
         async function getIpoList() {
             let stored = localStorage.getItem(STORAGE_KEY);
@@ -183,9 +485,38 @@
                     opt.textContent = ipo.Name || ipo.name;
                     selectBox.appendChild(opt);
                 });
-            } else {
-                selectBox.innerHTML = '<option value="" data-registrar="">No active IPOs</option>';
             }
+            handleIpoChange();
+        }
+
+        function handleIpoChange() {
+            const selectEl = document.getElementById('ipoSelect');
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const registrar = selectedOption ? (selectedOption.getAttribute('data-registrar') || 'kfin').toLowerCase() : 'kfin';
+            const captchaContainer = document.getElementById('bigshareCaptchaContainer');
+
+            if (registrar === 'bigshare') {
+                captchaContainer.style.display = 'flex';
+                loadBigshareCaptcha();
+            } else {
+                captchaContainer.style.display = 'none';
+            }
+        }
+
+        async function loadBigshareCaptcha() {
+            const imgEl = document.getElementById('bigshareCaptchaImg');
+            imgEl.src = '';
+            try {
+                const res = await fetch('/api/get-bigshare-captcha');
+                const data = await res.json();
+                if (data && data.d) {
+                    let d = typeof data.d === 'string' ? JSON.parse(data.d) : data.d;
+                    if (d.CaptchaImg) {
+                        imgEl.src = 'data:image/png;base64,' + d.CaptchaImg;
+                    }
+                    currentBigshareCaptchaToken = d.CaptchaToken || '';
+                }
+            } catch (err) {}
         }
 
         function openManageModal() {
@@ -359,9 +690,16 @@
             const selectedOption = selectEl.options[selectEl.selectedIndex];
             const selectedId = selectEl ? selectEl.value.trim() : '';
             const registrar = selectedOption ? (selectedOption.getAttribute('data-registrar') || 'kfin').toLowerCase() : 'kfin';
+            const captchaAnswer = document.getElementById('bigshareCaptchaInput').value.trim();
 
             if (!selectedId) {
                 alert("Please select an IPO from the dropdown list first.");
+                return;
+            }
+
+            if (registrar === 'bigshare' && !captchaAnswer) {
+                alert("Please enter the 6-digit Captcha shown next to the IPO dropdown.");
+                document.getElementById('bigshareCaptchaInput').focus();
                 return;
             }
 
@@ -402,7 +740,12 @@
                     return fetch('/api/allotment-bigshare', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ pan: item.pan, companyId: selectedId })
+                        body: JSON.stringify({
+                            pan: item.pan,
+                            companyId: selectedId,
+                            captchaToken: currentBigshareCaptchaToken,
+                            captchaAnswer: captchaAnswer
+                        })
                     })
                     .then(res => res.json())
                     .then(response => ({ item, response, success: true, registrar: 'bigshare' }))
@@ -438,12 +781,11 @@
                 if (res.success && res.response) {
                     let resData = res.response;
 
-                  if (res.registrar === 'bigshare') {
+                    if (res.registrar === 'bigshare') {
                         let allottedVal = resData.Allotted !== undefined ? resData.Allotted : null;
                         let sharesAppliedVal = resData.SharesApplied || '-';
                         investorName = resData.Name || item.label;
 
-                        // Fallback in case raw Table format is returned
                         if (allottedVal === null) {
                             let tableData = [];
                             if (resData && resData.d) {
@@ -474,7 +816,7 @@
                             statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
                             detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
                         }
-                    }else if (res.registrar === 'mufg') {
+                    } else if (res.registrar === 'mufg') {
                         const allottedVal = resData.Allotted || resData.allotted;
                         const sharesAppliedVal = resData.SharesApplied || resData.sharesApplied || '-';
                         investorName = resData.Name || resData.name || item.label;
@@ -569,7 +911,6 @@
         }
 
         addFamilyRow();
-        window.addEventListener('DOMContentLoaded', loadDynamicIpos);
-    </script>
+        window.addEventListener('DOMContentLoaded', loadDynamicIpos);</script>
 </body>
 </html>
