@@ -56,3 +56,8 @@ exports.handler = async (event) => {
     };
   }
 };
+
+function a(){
+
+}
+
