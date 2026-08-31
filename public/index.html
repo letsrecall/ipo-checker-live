@@ -399,7 +399,7 @@
 
             const apiPromises = Array.from(uniquePanMap.values()).map(item => {
                 if (registrar === 'bigshare') {
-    return fetch('https://bigshare-proxy.kanujpr120.workers.dev/', {
+    return fetch('https://bigshare-proxy.kanujpr120.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pan: item.pan, companyId: selectedId })
