@@ -18,13 +18,17 @@ exports.handler = async (event) => {
   try {
     const { pan, companyId } = JSON.parse(event.body || '{}');
     if (!pan || !companyId) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'PAN and companyId are required' }) };
+      return { 
+        statusCode: 400, 
+        headers, 
+        body: JSON.stringify({ error: 'PAN and companyId are required' }) 
+      };
     }
 
     const payload = {
       Company: String(companyId).trim(),
       SelectionType: 'PN',
-      PanNo: pan.toUpperCase().trim(),
+      PanNo: String(pan).toUpperCase().trim(),
       Applicationno: '',
       txtcsdl: '',
       txtDPID: '',
@@ -33,69 +37,82 @@ exports.handler = async (event) => {
       lang: 'en'
     };
 
-    // Standard browser headers to bypass Cloudflare bot filtering
     const reqHeaders = {
-      'Content-Type': 'application/json; charset=UTF-8',
+      'Content-Type': 'application/json; charset=utf-8',
       'Accept': 'application/json, text/javascript, */*; q=0.01',
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+      'X-Requested-With': 'XMLHttpRequest',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       'Origin': 'https://ipo1.bigshareonline.com',
-      'Referer': 'https://ipo1.bigshareonline.com/ipo_status.html',
-      'X-Requested-With': 'XMLHttpRequest'
+      'Referer': 'https://ipo1.bigshareonline.com/ipo_status.html'
     };
 
-    // Server fallback list (Server 1 -> Server 2 -> Main Server)
-    const servers = [
+    const endpoints = [
       'https://ipo1.bigshareonline.com/Data.aspx/FetchIpodetails',
       'https://ipo2.bigshareonline.com/Data.aspx/FetchIpodetails',
       'https://ipo.bigshareonline.com/Data.aspx/FetchIpodetails'
     ];
 
-    let resultJson = null;
-    let lastError = null;
+    let rawData = null;
 
-    for (const url of servers) {
+    for (const url of endpoints) {
       try {
         const response = await fetch(url, {
           method: 'POST',
           headers: reqHeaders,
           body: JSON.stringify(payload),
-          timeout: 7000
+          timeout: 6000
         });
 
         if (response.ok) {
-          const raw = await response.json();
-          let parsedData = raw.d;
-          if (typeof parsedData === 'string') {
-            parsedData = JSON.parse(parsedData);
+          const json = await response.json();
+          if (json && json.d) {
+            rawData = json.d;
+            break;
           }
-          resultJson = parsedData;
-          break; // Stop loop if successful
         }
-      } catch (err) {
-        lastError = err;
+      } catch (e) {
+        // Try next endpoint on error
       }
     }
 
-    if (!resultJson) {
+    if (!rawData) {
       return {
         statusCode: 200,
         headers,
-        body: JSON.stringify({ error: 'No response from Bigshare servers', details: lastError?.message })
+        body: JSON.stringify({ error: 'No data returned from Bigshare servers' })
       };
     }
 
-    // Standardize Table output for the frontend
-    const table = resultJson.Table || [];
-    if (Array.isArray(table) && table.length > 0) {
-      const rec = table[0];
+    // Parse JSON string inside .d if stringified
+    let parsed = rawData;
+    if (typeof rawData === 'string') {
+      try {
+        parsed = JSON.parse(rawData);
+      } catch (e) {
+        parsed = null;
+      }
+    }
+
+    // Extract table records across all known Bigshare formats
+    let records = [];
+    if (Array.isArray(parsed)) {
+      records = parsed;
+    } else if (parsed && Array.isArray(parsed.Table)) {
+      records = parsed.Table;
+    } else if (parsed && Array.isArray(parsed.Table1)) {
+      records = parsed.Table1;
+    }
+
+    if (records.length > 0) {
+      const rec = records[0];
       return {
         statusCode: 200,
         headers,
         body: JSON.stringify({
-          Name: rec.NAME1 || rec.Name1 || '',
+          Name: rec.NAME1 || rec.Name1 || rec.name1 || '',
           Company: rec.companyname || rec.Companyname || '',
-          SharesApplied: rec.SHARES || rec.Shares || '0',
-          Allotted: rec.ALLOT || rec.Allot || '0',
+          SharesApplied: rec.SHARES || rec.Shares || rec.shares || '0',
+          Allotted: rec.ALLOT || rec.Allot || rec.allot || '0',
           AppNo: rec.APPNO || rec.Appno || ''
         })
       };
@@ -104,7 +121,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ error: 'No records found' })
+      body: JSON.stringify({ error: 'No application record found' })
     };
 
   } catch (err) {
