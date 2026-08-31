@@ -43,6 +43,10 @@ exports.handler = async (event) => {
 
     var result = await response.text();
 
+    console.log("Bigshare status:", response.status);
+    console.log("Bigshare headers:", [...response.headers.entries()]);
+    console.log("Bigshare response:", result);
+
     // Bigshare returns JSON string, so just forward it directly
     return {
       statusCode: 200,
