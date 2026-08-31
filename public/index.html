@@ -439,42 +439,32 @@
                     let resData = res.response;
 
                   if (res.registrar === 'bigshare') {
-                        let allottedVal = resData.Allotted !== undefined ? resData.Allotted : null;
-                        let sharesAppliedVal = resData.SharesApplied || '-';
-                        investorName = resData.Name || item.label;
+    let tableData = [];
+    if (resData && resData.d) {
+        let dObj = typeof resData.d === 'string' ? JSON.parse(resData.d) : resData.d;
+        tableData = dObj.Table || [];
+    } else if (resData && resData.Table) {
+        tableData = resData.Table;
+    }
 
-                        // Fallback in case raw Table format is returned
-                        if (allottedVal === null) {
-                            let tableData = [];
-                            if (resData && resData.d) {
-                                let dObj = typeof resData.d === 'string' ? JSON.parse(resData.d) : resData.d;
-                                tableData = dObj.Table || [];
-                            } else if (resData && resData.Table) {
-                                tableData = resData.Table;
-                            }
+    if (Array.isArray(tableData) && tableData.length > 0) {
+        const record = tableData[0];
+        const allottedShares = parseInt(record.ALLOT || record.Allot || record.allot || 0, 10);
+        const appliedShares = record.SHARES || record.Shares || record.shares || '-';
+        investorName = record.NAME1 || record.Name1 || record.name1 || item.label;
 
-                            if (Array.isArray(tableData) && tableData.length > 0) {
-                                const record = tableData[0];
-                                allottedVal = record.ALLOT || record.Allot || record.allot || 0;
-                                sharesAppliedVal = record.SHARES || record.Shares || record.shares || '-';
-                                investorName = record.NAME1 || record.Name1 || record.name1 || item.label;
-                            }
-                        }
-
-                        if (!resData.error && allottedVal !== null && allottedVal !== undefined) {
-                            const allottedShares = parseInt(allottedVal || 0, 10);
-                            if (allottedShares > 0) {
-                                statusHtml = `<span class="status-badge status-allotted">🎉 ALLOTTED</span>`;
-                                detailsHtml = `<b style="color:var(--success); font-size:15px;">${allottedShares} Shares</b> <span style="color:var(--text-muted); font-size:13px;">(Applied: ${sharesAppliedVal})</span>`;
-                            } else {
-                                statusHtml = `<span class="status-badge status-failed">❌ NOT ALLOTTED</span>`;
-                                detailsHtml = `<span style="color:var(--text-muted);">0 Shares (Applied: ${sharesAppliedVal})</span>`;
-                            }
-                        } else {
-                            statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
-                            detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
-                        }
-                    }else if (res.registrar === 'mufg') {
+        if (allottedShares > 0) {
+            statusHtml = `<span class="status-badge status-allotted">🎉 ALLOTTED</span>`;
+            detailsHtml = `<b style="color:var(--success); font-size:15px;">${allottedShares} Shares</b> <span style="color:var(--text-muted); font-size:13px;">(Applied: ${appliedShares})</span>`;
+        } else {
+            statusHtml = `<span class="status-badge status-failed">❌ NOT ALLOTTED</span>`;
+            detailsHtml = `<span style="color:var(--text-muted);">0 Shares (Applied: ${appliedShares})</span>`;
+        }
+    } else {
+        statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
+        detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
+    }
+}else  if (res.registrar === 'mufg') {
                         const allottedVal = resData.Allotted || resData.allotted;
                         const sharesAppliedVal = resData.SharesApplied || resData.sharesApplied || '-';
                         investorName = resData.Name || resData.name || item.label;
