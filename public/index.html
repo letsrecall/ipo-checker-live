@@ -399,15 +399,15 @@
 
             const apiPromises = Array.from(uniquePanMap.values()).map(item => {
                 if (registrar === 'bigshare') {
-                    return fetch('/api/allotment-bigshare', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ pan: item.pan, companyId: selectedId })
-                    })
-                    .then(res => res.json())
-                    .then(response => ({ item, response, success: true, registrar: 'bigshare' }))
-                    .catch(error => ({ item, error, success: false, registrar: 'bigshare' }));
-                } else if (registrar === 'mufg') {
+    return fetch('https://bigshare-proxy.kanujpr120.workers.dev/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pan: item.pan, companyId: selectedId })
+    })
+    .then(res => res.json())
+    .then(response => ({ item, response, success: true, registrar: 'bigshare' }))
+    .catch(error => ({ item, error, success: false, registrar: 'bigshare' }));
+} else if (registrar === 'mufg') {
                     return fetch('/api/allotment-mufg', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -438,7 +438,7 @@
                 if (res.success && res.response) {
                     let resData = res.response;
 
-                  if (res.registrar === 'bigshare') {
+if (res.registrar === 'bigshare') {
     let tableData = [];
     if (resData && resData.d) {
         let dObj = typeof resData.d === 'string' ? JSON.parse(resData.d) : resData.d;
@@ -464,7 +464,7 @@
         statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
         detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
     }
-}else  if (res.registrar === 'mufg') {
+}  else  if (res.registrar === 'mufg') {
                         const allottedVal = resData.Allotted || resData.allotted;
                         const sharesAppliedVal = resData.SharesApplied || resData.sharesApplied || '-';
                         investorName = resData.Name || resData.name || item.label;
