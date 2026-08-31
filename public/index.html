@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Any Tech Help - IPO Allotment Checker</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 24px; max-width: 1000px; margin: 0 auto; }
+        .container { background: var(--card); border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border: 1px solid var(--border); padding: 28px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+        .title h1 { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .title p { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+        .queue-status-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px 18px; border-radius: 10px; display: flex; align-items: center; gap: 12px; }
+        .queue-badge { background: var(--primary); color: white; font-weight: 700; font-size: 16px; padding: 4px 12px; border-radius: 20px; }
+        .ipo-selector-box { margin-bottom: 20px; background: #f1f5f9; padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
+        .ipo-selector-box label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text); }
+        .select-row { display: flex; gap: 10px; }
+        .select-box { flex: 1; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 15px; outline: none; background: white; color: var(--text); font-weight: 500; }
+        .controls-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .btn { padding: 12px 20px; font-size: 15px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .family-rows-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+        .family-row { display: grid; grid-template-columns: 1fr 1fr 40px; gap: 12px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); }
+        .input-box { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); font-size: 14px; outline: none; text-transform: uppercase; }
+        .remove-btn { border: none; background: none; color: var(--danger); font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 50%; width: 32px; height: 32px; }
+        .remove-btn:hover { background: #fee2e2; }
+        .grid-viewer-pic { border-radius: 50%; object-fit: cover; border: 1.5px solid #cbd5e1; width: 36px; height: 36px; }
+        .results-box { margin-top: 32px; display: none; }
+        .results-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 12px; }
+        .results-table th { padding: 12px 16px; text-align: left; font-weight: 600; color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
+        .results-table td { padding: 14px 16px; background: #f8fafc; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .results-table tr td:first-child { border-left: 1px solid var(--border); border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        .results-table tr td:last-child { border-right: 1px solid var(--border); border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+        .status-badge { font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; }
+        .status-allotted { background: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+        .status-failed { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
+        .status-error { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; }
+        .modal-card { background: #ffffff; border-radius: 14px; width: 90%; max-width: 650px; padding: 24px; border: 1px solid var(--border); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .modal-form { display: grid; grid-template-columns: 2fr 1.5fr 1.2fr auto; gap: 8px; align-items: center; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; }
+        .badge-reg { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; background: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">
+                <h1>Any Tech Help - IPO Allotment Checker</h1>
+                <p>Capturing YouTube live chat PANs automatically via Python relay (Port 8080)</p>
+            </div>
+            <div class="queue-status-box">
+                <span id="queueCount" class="queue-badge">0</span>
+                <span style="font-weight: 600; font-size: 14px; color: #1e40af;">PANs Waiting</span>
+            </div>
+        </div>
+
+        <div class="ipo-selector-box">
+            <label for="ipoSelect">Select Active IPO:</label>
+            <div class="select-row">
+                <select id="ipoSelect" class="select-box">
+                    <option value="" data-registrar="">⏳ Loading IPOs...</option>
+                </select>
+                <button onclick="openManageModal()" class="btn btn-secondary" style="white-space: nowrap;">⚙️ Manage IPOs</button>
+            </div>
+        </div>
+
+        <div class="controls-bar">
+            <button onclick="pullNext10Pans()" class="btn btn-primary">⚡ Fetch Next 10 Viewers & Check All</button>
+            <button onclick="addFamilyRow()" class="btn btn-secondary">➕ Add Single Manual Row</button>
+            <button onclick="clearPanQueue()" class="btn btn-secondary" style="color: var(--danger);">🗑️ Clear Queue</button>
+            <button onclick="clearFormAndResults()" class="btn btn-secondary" style="color: #475569;">🧹 Clear Inputs & Results</button>
+        </div>
+
+        <div id="familyRows" class="family-rows-container"></div>
+
+        <button id="checkAllotmentBtn" onclick="checkAllFamilyPans()" class="btn btn-primary" style="width: 100%; justify-content: center; background: #059669; font-size: 16px; padding: 14px;">
+            🔍 Check Allotment Status Now
+        </button>
+
+        <div id="bulkResultsBox" class="results-box">
+            <h2 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">Live Allotment Results</h2>
+            <table id="resultTable" class="results-table">
+                <thead>
+                    <tr>
+                        <th>Viewer Name</th>
+                        <th>PAN Number</th>
+                        <th>Status</th>
+                        <th>Shares Allotted (Applied)</th>
+                    </tr>
+                </thead>
+                <tbody id="bulkResultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Admin Manage Modal -->
+    <div id="manageModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 style="font-size: 18px; font-weight: 700;">⚙️ Manage Active IPOs</h3>
+                <button onclick="closeManageModal()" style="border:none; background:none; font-size: 20px; cursor:pointer;">✕</button>
+            </div>
+            <input type="hidden" id="adminOriginalId" value="">
+            <div class="modal-form">
+                <input type="text" id="adminIpoName" placeholder="IPO Company Name" class="input-box" style="text-transform:none;">
+                <input type="text" id="adminIpoId" placeholder="Client ID / Code" class="input-box" style="text-transform:none;">
+                <select id="adminIpoReg" class="select-box" style="padding: 8px;">
+                    <option value="kfin">KFintech</option>
+                    <option value="bigshare">Bigshare</option>
+                    <option value="mufg">MUFG</option>
+                </select>
+                <div style="display: flex; gap: 4px;">
+                    <button id="adminSaveBtn" onclick="saveIpoFromModal()" class="btn btn-primary" style="padding: 8px 14px;">Save</button>
+                    <button id="adminCancelBtn" onclick="resetAdminForm()" class="btn btn-secondary" style="padding: 8px 10px; display: none;">✕</button>
+                </div>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left;">
+                            <th style="padding: 8px 12px;">Company</th>
+                            <th style="padding: 8px 12px;">Registrar</th>
+                            <th style="padding: 8px 12px;">Client ID</th>
+                            <th style="padding: 8px 12px; text-align: right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminIpoTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_AVATAR = 'https://www.gstatic.com/youtube/img/creator/avatar/default_v2.png';
+        const STORAGE_KEY = 'ath_ipo_list';
+
+        async function getIpoList() {
+            let stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try { return JSON.parse(stored); } catch(e) {}
+            }
+            try {
+                const response = await fetch('/ipos.json?v=' + new Date().getTime());
+                const list = await response.json();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+                return list;
+            } catch(e) {
+                return [];
+            }
+        }
+
+        function setIpoList(list) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        }
+
+        async function loadDynamicIpos() {
+            const selectBox = document.getElementById('ipoSelect');
+            if (!selectBox) return;
+            const list = await getIpoList();
+            selectBox.innerHTML = '<option value="" data-registrar="">-- Choose IPO --</option>';
+            if (Array.isArray(list) && list.length > 0) {
+                list.forEach(ipo => {
+                    const opt = document.createElement('option');
+                    opt.value = ipo.Id || ipo.id;
+                    opt.setAttribute('data-registrar', (ipo.Registrar || ipo.registrar || 'kfin').toLowerCase());
+                    opt.textContent = ipo.Name || ipo.name;
+                    selectBox.appendChild(opt);
+                });
+            } else {
+                selectBox.innerHTML = '<option value="" data-registrar="">No active IPOs</option>';
+            }
+        }
+
+        function openManageModal() {
+            document.getElementById('manageModal').style.display = 'flex';
+            resetAdminForm();
+            loadAdminTable();
+        }
+
+        function closeManageModal() {
+            document.getElementById('manageModal').style.display = 'none';
+            resetAdminForm();
+            loadDynamicIpos();
+        }
+
+        function resetAdminForm() {
+            document.getElementById('adminOriginalId').value = '';
+            document.getElementById('adminIpoName').value = '';
+            document.getElementById('adminIpoId').value = '';
+            document.getElementById('adminIpoReg').value = 'kfin';
+            document.getElementById('adminSaveBtn').innerText = 'Save';
+            document.getElementById('adminCancelBtn').style.display = 'none';
+        }
+
+        async function loadAdminTable() {
+            const tbody = document.getElementById('adminIpoTableBody');
+            const list = await getIpoList();
+            tbody.innerHTML = '';
+            if (Array.isArray(list) && list.length > 0) {
+                list.forEach(item => {
+                    const name = item.Name || item.name || '-';
+                    const id = item.Id || item.id || '-';
+                    const reg = (item.Registrar || item.registrar || 'kfin').toLowerCase();
+                    const safeName = name.replace(/'/g, "\\'");
+                    const safeId = id.replace(/'/g, "\\'");
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #f1f5f9';
+                    tr.innerHTML = `
+                        <td style="padding: 8px 12px; font-weight:600;">${name}</td>
+                        <td style="padding: 8px 12px;"><span class="badge-reg">${reg}</span></td>
+                        <td style="padding: 8px 12px;"><code>${id}</code></td>
+                        <td style="padding: 8px 12px; text-align: right; white-space: nowrap;">
+                            <button onclick="editIpoInModal('${safeName}', '${safeId}', '${reg}')" style="background:#e0e7ff; color:#3730a3; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:600; margin-right:4px;">✏️ Edit</button>
+                            <button onclick="deleteIpoFromModal('${safeId}')" style="background:#fee2e2; color:#dc2626; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:600;">🗑️ Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" style="padding:10px; text-align:center; color:#64748b;">No IPOs found. Add one above!</td></tr>';
+            }
+        }
+
+        function editIpoInModal(name, id, registrar) {
+            document.getElementById('adminOriginalId').value = id;
+            document.getElementById('adminIpoName').value = name;
+            document.getElementById('adminIpoId').value = id;
+            document.getElementById('adminIpoReg').value = registrar.toLowerCase();
+            document.getElementById('adminSaveBtn').innerText = '💾 Update';
+            document.getElementById('adminCancelBtn').style.display = 'inline-block';
+            document.getElementById('adminIpoName').focus();
+        }
+
+        async function saveIpoFromModal() {
+            const originalId = document.getElementById('adminOriginalId').value.trim();
+            const name = document.getElementById('adminIpoName').value.trim();
+            const id = document.getElementById('adminIpoId').value.trim();
+            const registrar = document.getElementById('adminIpoReg').value;
+            if (!name || !id) {
+                alert("Please enter both Company Name and Client ID.");
+                return;
+            }
+            let list = await getIpoList();
+            if (originalId) {
+                list = list.filter(x => (x.Id || x.id).toLowerCase() !== originalId.toLowerCase());
+            }
+            list = list.filter(x => (x.Id || x.id).toLowerCase() !== id.toLowerCase());
+            list.unshift({ Name: name, Id: id, Registrar: registrar });
+            setIpoList(list);
+            resetAdminForm();
+            loadAdminTable();
+        }
+
+        async function deleteIpoFromModal(id) {
+            if (!confirm('Are you sure you want to delete this IPO?')) return;
+            let list = await getIpoList();
+            list = list.filter(x => (x.Id || x.id).toLowerCase() !== id.toLowerCase());
+            setIpoList(list);
+            resetAdminForm();
+            loadAdminTable();
+        }
+
+        function maskPanNumber(pan) {
+            if (!pan || pan.length !== 10) return pan;
+            return pan.substring(0, 4) + '****' + pan.substring(8);
+        }
+
+        window.livePanQueue = window.livePanQueue || [];
+
+        async function pollRelayServer() {
+            try {
+                const response = await fetch('http://localhost:8080/api/get-pans');
+                if (response.ok) {
+                    const items = await response.json();
+                    if (Array.isArray(items) && items.length > 0) {
+                        items.forEach(item => {
+                            if (!window.livePanQueue.some(x => x.pan === item.pan)) {
+                                window.livePanQueue.push(item);
+                            }
+                        });
+                        const counter = document.getElementById('queueCount');
+                        if (counter) counter.innerText = window.livePanQueue.length;
+                    }
+                }
+            } catch (err) {}
+        }
+        setInterval(pollRelayServer, 1000);
+
+        function pullNext10Pans() {
+            if (!window.livePanQueue || window.livePanQueue.length === 0) {
+                alert("No PANs waiting in live chat queue!");
+                return;
+            }
+            const batch = window.livePanQueue.splice(0, 10);
+            const counter = document.getElementById('queueCount');
+            if (counter) counter.innerText = window.livePanQueue.length;
+            const container = document.getElementById('familyRows');
+            if (container) container.innerHTML = '';
+            batch.forEach(item => {
+                addFamilyRow(item.user, item.pan, item.avatar);
+            });
+        }
+
+        function addFamilyRow(label = '', pan = '', avatar = '') {
+            const container = document.getElementById('familyRows');
+            if (!container) return;
+            const displayPan = maskPanNumber(pan.toUpperCase());
+            const avatarSrc = avatar || DEFAULT_AVATAR;
+            const div = document.createElement('div');
+            div.className = 'family-row';
+            div.innerHTML = `
+                <input type="text" class="input-box viewer-name-field" placeholder="Viewer Name" value="${label}" style="width: 100%; text-transform:none;" data-avatar="${avatarSrc}">
+                <input type="text" class="input-box pan-field" placeholder="PAN Number" maxlength="10" value="${displayPan}" data-real-pan="${pan.toUpperCase()}">
+                <button class="remove-btn" onclick="this.parentElement.remove()" title="Remove Row">✕</button>
+            `;
+            container.appendChild(div);
+            attachPanEvents(div.querySelector('.pan-field'));
+        }
+
+        function attachPanEvents(input) {
+            if (!input) return;
+            input.addEventListener('focus', function () {
+                const realPan = this.getAttribute('data-real-pan') || '';
+                if (realPan) this.value = realPan;
+            });
+            input.addEventListener('input', function () {
+                const val = this.value.toUpperCase();
+                this.value = val;
+                this.setAttribute('data-real-pan', val);
+            });
+            input.addEventListener('blur', function () {
+                const val = (this.getAttribute('data-real-pan') || this.value).toUpperCase();
+                if (val.length === 10) {
+                    this.setAttribute('data-real-pan', val);
+                    this.value = maskPanNumber(val);
+                }
+            });
+        }
+
+        async function checkAllFamilyPans() {
+            const selectEl = document.getElementById('ipoSelect');
+            const selectedOption = selectEl.options[selectEl.selectedIndex];
+            const selectedId = selectEl ? selectEl.value.trim() : '';
+            const registrar = selectedOption ? (selectedOption.getAttribute('data-registrar') || 'kfin').toLowerCase() : 'kfin';
+
+            if (!selectedId) {
+                alert("Please select an IPO from the dropdown list first.");
+                return;
+            }
+
+            const rows = document.querySelectorAll('.family-row');
+            const uniquePanMap = new Map();
+            rows.forEach(row => {
+                const nameInput = row.querySelector('.viewer-name-field');
+                const panInput = row.querySelector('.pan-field');
+                const label = nameInput ? nameInput.value.trim() : 'Viewer';
+                const realPan = panInput ? (panInput.getAttribute('data-real-pan') || panInput.value).trim().toUpperCase() : '';
+                const avatarSrc = nameInput ? (nameInput.getAttribute('data-avatar') || DEFAULT_AVATAR) : DEFAULT_AVATAR;
+
+                if (realPan.length === 10) {
+                    if (!uniquePanMap.has(realPan)) {
+                        uniquePanMap.set(realPan, { label, pan: realPan, avatarSrc });
+                    }
+                }
+            });
+
+            if (uniquePanMap.size === 0) {
+                alert("Please enter or fetch at least one valid 10-character PAN number.");
+                return;
+            }
+
+            const checkBtn = document.getElementById('checkAllotmentBtn');
+            const tbody = document.getElementById('bulkResultsBody');
+            const resultsBox = document.getElementById('bulkResultsBox');
+
+            if (checkBtn) {
+                checkBtn.disabled = true;
+                checkBtn.innerText = "Checking Allotment...";
+            }
+            tbody.innerHTML = '';
+            if (resultsBox) resultsBox.style.display = 'block';
+
+            const apiPromises = Array.from(uniquePanMap.values()).map(item => {
+                if (registrar === 'bigshare') {
+                    return fetch('/api/allotment-bigshare', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pan: item.pan, companyId: selectedId })
+                    })
+                    .then(res => res.json())
+                    .then(response => ({ item, response, success: true, registrar: 'bigshare' }))
+                    .catch(error => ({ item, error, success: false, registrar: 'bigshare' }));
+                } else if (registrar === 'mufg') {
+                    return fetch('/api/allotment-mufg', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pan: item.pan, clientid: selectedId })
+                    })
+                    .then(res => res.json())
+                    .then(response => ({ item, response, success: true, registrar: 'mufg' }))
+                    .catch(error => ({ item, error, success: false, registrar: 'mufg' }));
+                } else {
+                    return fetch(`https://0uz601ms56.execute-api.ap-south-1.amazonaws.com/prod/api/query?type=pan`, {
+                        headers: { 'client_id': selectedId, 'reqparam': item.pan }
+                    })
+                    .then(res => res.json())
+                    .then(response => ({ item, response, success: true, registrar: 'kfin' }))
+                    .catch(error => ({ item, error, success: false, registrar: 'kfin' }));
+                }
+            });
+
+            const results = await Promise.all(apiPromises);
+
+            results.forEach(res => {
+                const item = res.item;
+                const tr = document.createElement('tr');
+                let statusHtml = '';
+                let detailsHtml = '-';
+                let investorName = item.label;
+
+                if (res.success && res.response) {
+                    let resData = res.response;
+
+                    if (res.registrar === 'bigshare') {
+                        let tableData = [];
+                        if (resData && resData.d) {
+                            let dObj = typeof resData.d === 'string' ? JSON.parse(resData.d) : resData.d;
+                            tableData = dObj.Table || [];
+                        } else if (resData && resData.Table) {
+                            tableData = resData.Table;
+                        }
+
+                        if (Array.isArray(tableData) && tableData.length > 0) {
+                            const record = tableData[0];
+                            const allottedShares = parseInt(record.ALLOT || record.Allot || record.allot || 0, 10);
+                            const appliedShares = record.SHARES || record.Shares || record.shares || '-';
+                            investorName = record.NAME1 || record.Name1 || record.name1 || item.label;
+
+                            if (allottedShares > 0) {
+                                statusHtml = `<span class="status-badge status-allotted">🎉 ALLOTTED</span>`;
+                                detailsHtml = `<b style="color:var(--success); font-size:15px;">${allottedShares} Shares</b> <span style="color:var(--text-muted); font-size:13px;">(Applied: ${appliedShares})</span>`;
+                            } else {
+                                statusHtml = `<span class="status-badge status-failed">❌ NOT ALLOTTED</span>`;
+                                detailsHtml = `<span style="color:var(--text-muted);">0 Shares (Applied: ${appliedShares})</span>`;
+                            }
+                        } else {
+                            statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
+                            detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
+                        }
+                    } else if (res.registrar === 'mufg') {
+                        const allottedVal = resData.Allotted || resData.allotted;
+                        const sharesAppliedVal = resData.SharesApplied || resData.sharesApplied || '-';
+                        investorName = resData.Name || resData.name || item.label;
+
+                        if (resData && !resData.error && allottedVal !== undefined && allottedVal !== null) {
+                            const allottedShares = parseInt(allottedVal || 0, 10);
+                            if (allottedShares > 0) {
+                                statusHtml = `<span class="status-badge status-allotted">🎉 ALLOTTED</span>`;
+                                detailsHtml = `<b style="color:var(--success); font-size:15px;">${allottedShares} Shares</b> <span style="color:var(--text-muted); font-size:13px;">(Applied: ${sharesAppliedVal})</span>`;
+                            } else {
+                                statusHtml = `<span class="status-badge status-failed">❌ NOT ALLOTTED</span>`;
+                                detailsHtml = `<span style="color:var(--text-muted);">0 Shares (Applied: ${sharesAppliedVal})</span>`;
+                            }
+                        } else {
+                            statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
+                            detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
+                        }
+                    } else {
+                        const dataArray = resData && resData.data ? resData.data : [];
+                        if (Array.isArray(dataArray) && dataArray.length > 0) {
+                            const record = dataArray[0];
+                            const allottedShares = parseInt(record.All_Shares || 0, 10);
+                            const appliedShares = record.App_Shares || '-';
+                            investorName = record.Name || item.label;
+
+                            if (allottedShares > 0) {
+                                statusHtml = `<span class="status-badge status-allotted">🎉 ALLOTTED</span>`;
+                                detailsHtml = `<b style="color:var(--success); font-size:15px;">${allottedShares} Shares</b> <span style="color:var(--text-muted); font-size:13px;">(Applied: ${appliedShares})</span>`;
+                            } else {
+                                statusHtml = `<span class="status-badge status-failed">❌ NOT ALLOTTED</span>`;
+                                detailsHtml = `<span style="color:var(--text-muted);">0 Shares (Applied: ${appliedShares})</span>`;
+                            }
+                        } else {
+                            statusHtml = `<span class="status-badge status-failed">❌ NO RECORD</span>`;
+                            detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">No application record found</span>`;
+                        }
+                    }
+
+                    tr.innerHTML = `
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${item.avatarSrc}" alt="Viewer Avatar" class="grid-viewer-pic">
+                                <div>
+                                    <b style="font-size:14px; color:var(--text);">${item.label}</b>
+                                    ${investorName !== item.label ? `<br><small style="color:var(--text-muted); font-weight:500;">${investorName}</small>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td><code style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-weight:600;">${maskPanNumber(item.pan)}</code></td>
+                        <td>${statusHtml}</td>
+                        <td>${detailsHtml}</td>
+                    `;
+                } else {
+                    statusHtml = `<span class="status-badge status-error">⚠️ Error</span>`;
+                    detailsHtml = `<span style="color:var(--text-muted); font-size: 12px;">API Timeout / Connection Error</span>`;
+                    tr.innerHTML = `
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <img src="${item.avatarSrc}" alt="Viewer Avatar" class="grid-viewer-pic">
+                                <b style="font-size:14px;">${item.label}</b>
+                            </div>
+                        </td>
+                        <td><code style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-weight:600;">${maskPanNumber(item.pan)}</code></td>
+                        <td>${statusHtml}</td>
+                        <td>${detailsHtml}</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+
+            if (checkBtn) {
+                checkBtn.disabled = false;
+                checkBtn.innerText = "🔍 Check Allotment Status Now";
+            }
+        }
+
+        function clearPanQueue() {
+            window.livePanQueue = [];
+            const counter = document.getElementById('queueCount');
+            if (counter) counter.innerText = 0;
+            alert("Live stream queue cleared!");
+        }
+
+        function clearFormAndResults() {
+            const container = document.getElementById('familyRows');
+            if (container) container.innerHTML = '';
+            const tbody = document.getElementById('bulkResultsBody');
+            if (tbody) tbody.innerHTML = '';
+            const resultsBox = document.getElementById('bulkResultsBox');
+            if (resultsBox) resultsBox.style.display = 'none';
+            addFamilyRow();
+        }
+
+        addFamilyRow();
+        window.addEventListener('DOMContentLoaded', loadDynamicIpos);
+    </script>
+</body>
+</html>
