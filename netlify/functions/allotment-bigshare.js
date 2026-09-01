@@ -18,7 +18,7 @@ exports.handler = async (event) => {
   try {
     const { pan, companyId } = JSON.parse(event.body || '{}');
 
-    var url = "https://ipo1.bigshareonline.com/Data.aspx/FetchIpodetails";
+    var url = "https://ipo.bigshareonline.com/Data.aspx/FetchIpodetails";
 
     var payload = {
       Applicationno: "",
